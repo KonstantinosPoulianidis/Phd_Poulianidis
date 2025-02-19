@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Μηνιαία αναφορά phd_Poulianidis</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e8eff1;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow-x: auto;
+        }
+        header {
+            background: #305f72;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            font-size: 35px;
+        }
+        .task-manager {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        .task-manager h2 {
+            color: #305f72;
+        }
+        .task-manager input, .task-manager textarea, .task-manager button {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .task-manager button {
+            background: #50b3a2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .task-manager button:hover {
+            background: #429187;
+        }
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+        }
+        .task-table th, .task-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .task-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        ΜΗΝΙΑΙΑ ΑΝΑΦΟΡΑ ΔΙΔΑΚΤΟΡΙΚΗΣ ΔΙΑΤΡΙΒΗΣ
+    </header>
+    <div class="container">
+        <div class="task-manager">
+            <h2>Προσθήκη Σημείωσης</h2>
+            <input type="text" id="task-name" placeholder="Αντικείμενο Σημείωσης" />
+            <input type="text" id="employee-name" placeholder="Όνομα Φοιτητή - Επιβλέποντα" />
+            <input type="date" id="start-date" />
+            <input type="date" id="end-date" />
+            <textarea id="task-description" placeholder="Περιγραφή Σημείωσης"></textarea>
+            <input type="password" id="admin-password" placeholder="Κωδικός Διαχειριστή" />
+            <button onclick="addTask()">Προσθήκη Σημείωσης</button>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>Αντικείμενο</th>
+                        <th>Όνομα Φοιτητή - Επιβλέποντα</th>
+                        <th>Έναρξη</th>
+                        <th>Λήξη</th>
+                        <th>Περιγραφή</th>
+                        <th>Διαγραφή</th>
+                    </tr>
+                </thead>
+                <tbody id="tasks-list"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        function getTasks() {
+            return JSON.parse(localStorage.getItem('tasks')) || [];
+        }
+        function addTask() {
+            var taskName = document.getElementById('task-name').value;
+            var employeeName = document.getElementById('employee-name').value;
+            var startDate = document.getElementById('start-date').value;
+            var endDate = document.getElementById('end-date').value;
+            var taskDescription = document.getElementById('task-description').value;
+            var adminPassword = document.getElementById('admin-password').value;
+
+            if (adminPassword !== '1992') {
+                alert('Λανθασμένος κωδικός διαχειριστή.');
+                return;
+            }
+            if (!taskName || !employeeName || !startDate || !endDate || !taskDescription) {
+                alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
+                return;
+            }
+            var task = { taskName, employeeName, startDate, endDate, taskDescription };
+            saveTask(task);
+            
+            document.getElementById('task-name').value = '';
+            document.getElementById('employee-name').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            document.getElementById('task-description').value = '';
+            document.getElementById('admin-password').value = '';
+        }
+        function saveTask(task) {
+            var tasks = getTasks();
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            addTaskToDOM(task);
+        }
+        function addTaskToDOM(task) {
+            var taskList = document.getElementById('tasks-list');
+            var row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${task.taskName}</td>
+                <td>${task.employeeName}</td>
+                <td>${task.startDate}</td>
+                <td>${task.endDate}</td>
+                <td>${task.taskDescription}</td>
+                <td><button class="delete-button" onclick="deleteTask(this, '${task.taskName}')">Διαγραφή</button></td>
+            `;
+            taskList.appendChild(row);
+        }
+        function deleteTask(button, taskName) {
+            var adminPassword = prompt('Παρακαλώ εισάγετε τον κωδικό διαχειριστή για διαγραφή:');
+            if (adminPassword !== '1992') {
+                alert('Λανθασμένος κωδικός διαχειριστή.');
+                return;
+            }
+            var row = button.parentNode.parentNode;
+            var tasks = getTasks().filter(task => task.taskName !== taskName);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            row.remove();
+        }
+    </script>
+</body>
+</html>
